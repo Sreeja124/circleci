@@ -1,45 +1,33 @@
 version: 2.1
+
+# Define a job called 'build_and_push' to build and push the Docker image
 jobs:
-  build:
+  build_and_push:
     docker:
-      - image: python:3.9
+      - image: cimg/base:2022.09
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            - v1-dependencies-
+      - setup_remote_docker:  # Prepares the Docker environment
+          docker_layer_caching: true
+
+      # Log in to Docker Hub
       - run:
-          name: Install Python dependencies
-          command: |
-            pip install -r requirements.txt
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
-  test:
-    docker:
-      - image: python:3.9
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            - v1-dependencies-
+          name: Log in to Docker Hub
+          command: echo "$DOCKERHUB_PASS" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+
+      # Build the Docker image
       - run:
-          name: Install Python dependencies and pytest
-          command: |
-            pip install -r requirements.txt
-            pip install pytest
+          name: Build Docker image
+          command: docker build -t $DOCKERHUB_USERNAME/circleci_dockerimage:$CIRCLE_SHA1 .
+
+      # Push the Docker image to Docker Hub
       - run:
-          name: Run Python tests with pytest
-          command: |
-            pytest --junitxml=junit.xml || (( $? == 5 )) && echo 'Did not find any tests to run.'
+          name: Push Docker image to Docker Hub
+          command: docker push $DOCKERHUB_USERNAME/circleci_dockerimage:$CIRCLE_SHA1
+
+# Define the workflow
 workflows:
   version: 2
-  build_and_test:
+  build_and_deploy:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
+      - build_and_push
