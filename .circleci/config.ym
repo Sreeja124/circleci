@@ -2,34 +2,39 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: python:3.9  # Adjust the Python version as needed
+      - image: python:3.9
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-
       - run:
           name: Install Python dependencies
           command: |
             pip install -r requirements.txt
-
-      # You can add additional steps for your specific project needs here.
-
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
   test:
     docker:
-      - image: python:3.9  # Adjust the Python version as needed
+      - image: python:3.9
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-
       - run:
           name: Install Python dependencies and pytest
           command: |
             pip install -r requirements.txt
             pip install pytest
-
       - run:
           name: Run Python tests with pytest
           command: |
             pytest --junitxml=junit.xml || (( $? == 5 )) && echo 'Did not find any tests to run.'
-
-      # You can add more test-related steps here if needed.
-
 workflows:
   version: 2
   build_and_test:
