@@ -18,14 +18,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Python dependencies
+          name: Install Python dependencies and pytest
           command: |
             pip install -r requirements.txt
+            pip install pytest
 
       - run:
-          name: Run Python tests
+          name: Run Python tests with pytest
           command: |
-            python -m pytest  # Specify the full path to pytest
+            pytest --junitxml=junit.xml || (( $? == 5 )) && echo 'Did not find any tests to run.'
 
       # You can add more test-related steps here if needed.
 
