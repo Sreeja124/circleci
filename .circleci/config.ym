@@ -1,0 +1,39 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: python:3.9  # Adjust the Python version as needed
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: |
+            pip install -r requirements.txt
+
+      # You can add additional steps for your specific project needs here.
+
+  test:
+    docker:
+      - image: python:3.9  # Adjust the Python version as needed
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: |
+            pip install -r requirements.txt
+
+      - run:
+          name: Run Python tests
+          command: |
+            pytest
+
+      # You can add more test-related steps here if needed.
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
