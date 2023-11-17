@@ -14,8 +14,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            # Run your test commands here
-            pytest
+            python -m unittest test
 
   deploy:
     docker:
@@ -27,8 +26,8 @@ jobs:
           name: Build and push Docker image
           command: |
             echo "$DOCKERHUB_PASS" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-            docker build -t yourdockerhubusername/yourimage .
-            docker push yourdockerhubusername/yourimage
+            docker build -t yourdockerhubusername/yourprojectname .
+            docker push yourdockerhubusername/yourprojectname
 
 workflows:
   version: 2
