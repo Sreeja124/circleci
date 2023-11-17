@@ -25,6 +25,22 @@ jobs:
         name: Run Tests
         command: |
           docker run my-python-app python -m pytest
+  deploy:
+    docker:
+      - image: cimg/python:3.8
+    steps:
+      - attach_workspace:
+          at: .
+      - setup_remote_docker
+      - run:
+          name: Log in to Docker Hub
+          command: echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      - run:
+          name: Push Docker image
+          command: |
+            docker load -i my-python-app.tar
+            docker tag my-python-app $DOCKERHUB_USERNAME/my-python-app:latest
+            docker push $DOCKERHUB_USERNAME/my-python-app:latest
 
 
 workflows:
