@@ -1,33 +1,18 @@
 version: 2.1
-
-# Define a job called 'build_and_push' to build and push the Docker image
 jobs:
-  build_and_push:
+  build:
     docker:
-      - image: cimg/base:2022.09
+      - image: cimg/python:3.8
     steps:
       - checkout
-      - setup_remote_docker:  # Prepares the Docker environment
-          docker_layer_caching: true
-
-      # Log in to Docker Hub
-      - run:
-          name: Log in to Docker Hub
-          command: echo "$DOCKERHUB_PASS" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-
-      # Build the Docker image
+      - setup_remote_docker
       - run:
           name: Build Docker image
-          command: docker build -t $DOCKERHUB_USERNAME/circleci_dockerimage:$CIRCLE_SHA1 .
-
-      # Push the Docker image to Docker Hub
+          command: docker build -t my-python-app .
       - run:
-          name: Push Docker image to Docker Hub
-          command: docker push $DOCKERHUB_USERNAME/circleci_dockerimage:$CIRCLE_SHA1
-
-# Define the workflow
-workflows:
-  version: 2
-  build_and_deploy:
-    jobs:
-      - build_and_push
+          name: Save Docker image
+          command: docker save -o my-python-app.tar my-python-app
+      - persist_to_workspace:
+          root: .
+          paths:
+            - my-python-app.tar
