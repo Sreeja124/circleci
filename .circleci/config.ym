@@ -22,9 +22,10 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Run Tests
-          command: |
-            docker run my-python-app python -m pytest
+        name: Run Tests
+        command: |
+          docker run my-python-app python -m pytest
+
 
 workflows:
   version: 2
