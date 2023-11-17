@@ -1,4 +1,5 @@
 version: 2.1
+
 jobs:
   build:
     docker:
@@ -9,10 +10,27 @@ jobs:
       - run:
           name: Build Docker image
           command: docker build -t my-python-app .
-      - run:
-          name: Save Docker image
-          command: docker save -o my-python-app.tar my-python-app
       - persist_to_workspace:
           root: .
           paths:
-            - my-python-app.tar
+            - .
+
+  test:
+    docker:
+      - image: my-python-app
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run Tests
+          command: |
+            docker run my-python-app python -m pytest
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
