@@ -4,6 +4,10 @@ FROM python:3.8-slim
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
+# and ensure pytest is installed for running tests
+
+RUN pip install --no-cache-dir -r requirements.txt pytest
+
 # Copy the current directory contents into the container at /usr/src/app
 COPY . .
 
