@@ -1,0 +1,7 @@
+# Project dependencies
+# (List your project-specific dependencies here. Example:)
+# requests==2.25.1
+# numpy==1.20.1
+
+# Testing dependencies
+pytest==7.1.1
