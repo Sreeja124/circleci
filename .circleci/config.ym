@@ -9,22 +9,25 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker image
-          command: docker build -t my-python-app .
+          command: docker build -t dockerimage_ci:1.0.0 .
+      - run:
+          name: Save Docker image
+          command: docker save -o dockerimage_ci_1.0.0.tar dockerimage_ci:1.0.0
       - persist_to_workspace:
           root: .
           paths:
-            - .
+            - dockerimage_ci_1.0.0.tar
 
   test:
     docker:
-      - image: my-python-app
+      - image: cimg/python:3.8
     steps:
       - attach_workspace:
           at: .
       - run:
-        name: Run Tests
-        command: |
-          docker run my-python-app python -m pytest
+          name: Run Tests
+          command: python -m pytest
+
   deploy:
     docker:
       - image: cimg/python:3.8
@@ -35,14 +38,12 @@ jobs:
       - run:
           name: Log in to Docker Hub
           command: echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-
       - run:
-          name: Push Docker image
+          name: Load and Push Docker image
           command: |
-            docker load -i my-python-app.tar
-            docker tag my-python-app $DOCKERHUB_USERNAME/my-python-app:latest
-            docker push $DOCKERHUB_USERNAME/my-python-app:latest
-
+            docker load -i dockerimage_ci_1.0.0.tar
+            docker tag dockerimage_ci:1.0.0 $DOCKERHUB_USERNAME/dockerimage_ci:1.0.0
+            docker push $DOCKERHUB_USERNAME/dockerimage_ci:1.0.0
 
 workflows:
   version: 2
