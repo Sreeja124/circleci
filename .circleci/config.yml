@@ -26,8 +26,8 @@ jobs:
           name: Build and push Docker image
           command: |
             echo "$DOCKERHUB_PASS" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-            docker build -t yourdockerhubusername/dockerimage_circleci .
-            docker push yourdockerhubusername/dockerimage_circleci
+            docker build -t sreeja124/dockerimage_circleci .
+            docker push sreeja124/dockerimage_circleci
 
 workflows:
   version: 2
