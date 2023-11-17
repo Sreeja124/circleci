@@ -1,20 +1,21 @@
 version: 2.1
 
 jobs:
-  build:
+  build_and_push:
     docker:
-      - image: cimg/python:3.8  # You can choose the image that matches your Python version
+      - image: cimg/python:3.8  # Or any other appropriate base image
     steps:
       - checkout
+      - setup_remote_docker
       - run:
-          name: Install Python dependencies
-          command: |
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
+          name: Build Docker image
+          command: docker build -t myorg/myimage:$CIRCLE_SHA1 .
       - run:
-          name: Run tests
+          name: Push Docker image
           command: |
-            python -m unittest test
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker push myorg/myimage:$CIRCLE_SHA1
+
 
   deploy:
     docker:
