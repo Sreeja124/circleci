@@ -1,68 +1,43 @@
 version: 2.1
 
 jobs:
-  build_and_test:
+  build:
+    docker:
+      - image: cimg/python:3.8  # You can choose the image that matches your Python version
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+      - run:
+          name: Run tests
+          command: |
+            # Run your test commands here
+            pytest
+
+  deploy:
     docker:
       - image: cimg/python:3.8
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Install Dependencies
+          name: Build and push Docker image
           command: |
-            python -m pip install -r requirements.txt
-      - run:
-          name: Run Tests
-          command: |
-            python -m pytest
-
-      # Assuming tests passed, now build the Docker image
-      - run:
-          name: Build Docker image
-          command: |
-            docker build -t $DOCKERHUB_USERNAME/my-app:latest .
-
-      # Save the Docker image as a tar file
-      - run:
-          name: Save Docker image
-          command: |
-            docker save -o my-app-image.tar $DOCKERHUB_USERNAME/my-app:latest
-
-      # Persist the Docker image tar file to the workspace
-      - persist_to_workspace:
-          root: .
-          paths:
-            - my-app-image.tar
-
-  deploy:
-    docker:
-      - image: cimg/python:3.8
-    steps:
-      - attach_workspace:
-          at: .
-      - setup_remote_docker
-      - run:
-          name: Load Docker image
-          command: |
-            docker load -i my-app-image.tar
-
-      # Log in to Docker Hub using environment variables
-      - run:
-          name: Log in to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-
-      # Push the Docker image to Docker Hub
-      - run:
-          name: Push Docker image
-          command: |
-            docker push $DOCKERHUB_USERNAME/my-app:latest
+            echo "$DOCKERHUB_PASS" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+            docker build -t yourdockerhubusername/yourimage .
+            docker push yourdockerhubusername/yourimage
 
 workflows:
   version: 2
-  build-deploy:
+  build_and_deploy:
     jobs:
-      - build_and_test
+      - build
       - deploy:
           requires:
-            - build_and_test
+            - build
+          filters:
+            branches:
+              only: main  # or any branch you want to deploy from
